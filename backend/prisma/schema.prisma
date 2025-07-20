@@ -1,0 +1,183 @@
+// Prisma schema for Therapy Clinic Backend
+// Supports: User, Role, Doctor, Patient, Appointment, Rating, Guardian, Receptionist, Admin
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?  @unique
+  roles       Role[]   @relation("UserRoles")
+  status      String   @default("ACTIVE")
+  doctor      Doctor?
+  patient     Patient?
+  guardian    Guardian?
+  receptionist Receptionist?
+  admin       Admin?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@map("Users")
+}
+
+model Role {
+  id    String  @id @default(uuid())
+  name  String  @unique // e.g., ADMIN, DOCTOR, PATIENT, RECEPTIONIST, GUARDIAN
+  users User[]  @relation("UserRoles")
+  @@map("Roles")
+}
+
+model Doctor {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @unique
+  bio           String?
+  specialties   String      // was String[]
+  photoUrl      String?
+  ratings       Rating[]
+  availability  Availability[]
+  appointments  Appointment[]
+  sessionNotes  SessionNote[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Patient {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @unique
+  medicalHistory String?
+  documents     Document[]
+  appointments  Appointment[]
+  guardians     Guardian[]
+  selfAssessments SelfAssessment[]
+  ratings       Rating[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Appointment {
+  id            String      @id @default(uuid())
+  doctor        Doctor      @relation(fields: [doctorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  doctorId      String
+  patient       Patient     @relation(fields: [patientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  patientId     String
+  startTime     DateTime
+  endTime       DateTime
+  status        String      // was AppointmentStatus
+  notes         String?
+  groupId       String?
+  group         GroupSession? @relation(fields: [groupId], references: [id])
+  sessionNote   SessionNote?
+  payment       Payment?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Rating {
+  id            String      @id @default(uuid())
+  doctor        Doctor      @relation(fields: [doctorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  doctorId      String
+  patient       Patient     @relation(fields: [patientId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  patientId     String
+  score         Int
+  comment       String?
+  anonymous     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+}
+
+model Guardian {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @unique
+  patients      Patient[]
+}
+
+model Receptionist {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @unique
+}
+
+model Admin {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String      @unique
+}
+
+model Availability {
+  id            String      @id @default(uuid())
+  doctor        Doctor      @relation(fields: [doctorId], references: [id])
+  doctorId      String
+  dayOfWeek     Int         // 0=Sunday, 6=Saturday
+  startTime     String      // e.g., "09:00"
+  endTime       String      // e.g., "17:00"
+}
+
+model Document {
+  id            String      @id @default(uuid())
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  patientId     String
+  url           String
+  type          String
+  uploadedAt    DateTime    @default(now())
+}
+
+model SessionNote {
+  id            String      @id @default(uuid())
+  doctor        Doctor      @relation(fields: [doctorId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  doctorId      String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  appointmentId String      @unique
+  note          String
+  createdAt     DateTime    @default(now())
+}
+
+model SelfAssessment {
+  id            String      @id @default(uuid())
+  patient       Patient     @relation(fields: [patientId], references: [id])
+  patientId     String
+  type          String      // e.g., PHQ-9, GAD-7
+  score         Int
+  filledAt      DateTime    @default(now())
+}
+
+model GroupSession {
+  id            String      @id @default(uuid())
+  appointments  Appointment[]
+  topic         String
+  createdAt     DateTime    @default(now())
+}
+
+model Payment {
+  id            String      @id @default(uuid())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  appointmentId String      @unique
+  amount        Int
+  status        String      @default("PENDING") // was PaymentStatus
+  authority     String? // Zarinpal authority code
+  refId         String? // Zarinpal ref id
+  paidAt        DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+model Resource {
+  id          String   @id @default(uuid())
+  title       String
+  type        String   // was ResourceType
+  content     String? // For articles or text
+  url         String? // For videos or external links
+  tags        String   // was String[]
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

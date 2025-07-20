@@ -1,0 +1,14 @@
+{
+  "welcome": "به پورتال کلینیک تراپی خوش آمدید!",
+  "login": "ورود",
+  "register": "ثبت نام",
+  "dashboard": "داشبورد",
+  "appointments": "نوبت‌ها",
+  "doctors": "پزشکان",
+  "patients": "بیماران",
+  "payments": "پرداخت‌ها",
+  "notifications": "اعلان‌ها",
+  "analytics": "آنالیتیکس",
+  "resources": "کتابخانه منابع",
+  "logout": "خروج"
+} 

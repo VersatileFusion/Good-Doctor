@@ -1,0 +1,14 @@
+{
+  "welcome": "Welcome to the Therapy Clinic Portal!",
+  "login": "Login",
+  "register": "Register",
+  "dashboard": "Dashboard",
+  "appointments": "Appointments",
+  "doctors": "Doctors",
+  "patients": "Patients",
+  "payments": "Payments",
+  "notifications": "Notifications",
+  "analytics": "Analytics",
+  "resources": "Resource Library",
+  "logout": "Logout"
+} 
